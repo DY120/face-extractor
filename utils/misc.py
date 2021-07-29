@@ -1,7 +1,7 @@
 import os
 import shutil
 
-def make_folder(folder):
+def initialize_folder(folder):
     if os.path.isdir(folder):
         shutil.rmtree(folder)
     
