@@ -6,7 +6,7 @@ import onnx
 import onnxruntime as ort
 from PIL import Image
 
-from detector import *
+from detection import *
 from utils.misc import *
 
 if __name__ == "__main__":
@@ -29,8 +29,12 @@ if __name__ == "__main__":
 
     for fn in img_filenames:
         img = Image.open(fn)
-        #cropped_faces = rfb_crop_faces(img, ort_session=ort_session, pad=args.pad)
-        cropped_faces = mtcnn_crop_faces(img, pad=args.pad)
+
+        try:
+            cropped_faces = rfb_crop_faces(img, ort_session=ort_session, pad=args.pad)
+            #cropped_faces = mtcnn_crop_faces(img, pad=args.pad)
+        except:
+            continue
         
         for idx, f in enumerate(cropped_faces, 1):
             save_filename = os.path.splitext(os.path.basename(fn))[0]
