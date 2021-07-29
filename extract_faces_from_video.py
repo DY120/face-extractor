@@ -3,22 +3,30 @@ import os
 import time
 
 import cv2
+import onnx
+import onnxruntime as ort
 from PIL import Image
 
 from detector import *
-from utils import *
+from utils.misc import *
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract faces from a video")
-    parser.add_argument("--input_path", type=str)
-    parser.add_argument("--result_root", type=str)
+    parser.add_argument("input_path", type=str)
+    parser.add_argument("--result_dir", type=str, default="results")
     parser.add_argument("--pad", type=float, default=1.0)
     parser.add_argument("--min_size", type=int, default=0)
     parser.add_argument("--num_sample", type=int, default=-1)
     parser.add_argument("--interval", type=int, default=60)
+    parser.add_argument("--onnx_path", type=str, default="version-RFB-640.onnx")
     args = parser.parse_args()
 
-    make_folder(args.result_root)
+    initialize_folder(args.result_dir)
+
+    model = onnx.load(args.onnx_path)
+    onnx.checker.check_model(model)
+    onnx.helper.printable_graph(model.graph)
+    ort_session = ort.InferenceSession(args.onnx_path)
 
     cap = cv2.VideoCapture(args.input_path)
     frame_count = 0
@@ -35,7 +43,8 @@ if __name__ == "__main__":
             frame = Image.fromarray(frame)
             
             try:
-                cropped_faces = crop_faces(frame, pad=args.pad)
+                cropped_faces = rfb_crop_faces(frame, ort_session=ort_session, pad=args.pad)
+                #cropped_faces = mtcnn_crop_faces(img, pad=args.pad)
             except:
                 continue
 
@@ -46,7 +55,7 @@ if __name__ == "__main__":
                 save_filename = str(face_count)
                 if idx != 1:
                     save_filename += f"-{idx}"
-                f.save(os.path.join(args.result_root, save_filename + ".png"))
+                f.save(os.path.join(args.result_dir, save_filename + ".png"))
                 face_count += 1
 
             print(f"{frame_count:06d}/{num_frame:06d}")
