@@ -7,7 +7,7 @@ import torch
 from torchvision.transforms import ToTensor
 from torchvision.utils import save_image
 
-from backbones import get_model
+from backbones.model_irse import IR_50
 
 
 @torch.no_grad()
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     parser.add_argument('--weight', type=str, default='backbone.pth')
     args = parser.parse_args()
 
-    net = get_model(args.network, fp16=False)
+    net = IR_50((112, 112))
     net.load_state_dict(torch.load(args.weight))
     net.eval()
 
