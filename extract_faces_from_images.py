@@ -19,8 +19,7 @@ if __name__ == "__main__":
 
     initialize_folder(args.result_dir)
     
-    img_filenames = [os.path.join(args.input_dir, i) \
-                     for i in os.listdir(args.input_dir)]
+    img_filenames = get_filenames(args.input_dir)
 
     model = onnx.load(args.onnx_path)
     onnx.checker.check_model(model)
